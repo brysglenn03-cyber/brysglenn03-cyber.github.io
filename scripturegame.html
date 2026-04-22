@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scripture Seeker — Book of Mormon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold:       #c9a84c;
+      --gold-light: #e8cc7a;
+      --gold-dim:   #7a5f28;
+      --parchment:  #f5edd6;
+      --ink:        #1a1408;
+      --brown-dark: #2c1f0a;
+      --brown-mid:  #4a3318;
+      --correct:    #4caf50;
+      --wrong:      #c0392b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background-color: #0e0b06;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.06) 0%, transparent 55%),
+        url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      font-family: 'EB Garamond', serif;
+      color: var(--parchment);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+    }
+
+    /* ── decorative top border ── */
+    .top-rule {
+      width: 100%;
+      max-width: 680px;
+      text-align: center;
+      color: var(--gold);
+      font-size: 1.1rem;
+      letter-spacing: 0.3em;
+      margin-bottom: 8px;
+      opacity: 0.7;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    header h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1.4rem, 4vw, 2.4rem);
+      color: var(--gold-light);
+      text-shadow: 0 0 30px rgba(201,168,76,0.4);
+      letter-spacing: 0.05em;
+      line-height: 1.2;
+    }
+    header p.subtitle {
+      font-style: italic;
+      color: var(--gold-dim);
+      font-size: 1.05rem;
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── score bar ── */
+    .scorebar {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      color: var(--gold-dim);
+      margin-bottom: 28px;
+    }
+    .scorebar span strong {
+      color: var(--gold-light);
+      font-size: 1.1rem;
+    }
+
+    /* ── card ── */
+    .card {
+      background: linear-gradient(160deg, #2a1e09 0%, #1a1205 100%);
+      border: 1px solid var(--gold-dim);
+      border-radius: 4px;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.08),
+        0 8px 40px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(201,168,76,0.15);
+      max-width: 680px;
+      width: 100%;
+      padding: 40px 44px;
+      position: relative;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    /* corner ornaments */
+    .card::before, .card::after {
+      content: '✦';
+      position: absolute;
+      color: var(--gold-dim);
+      font-size: 0.7rem;
+      opacity: 0.5;
+    }
+    .card::before { top: 10px; left: 14px; }
+    .card::after  { bottom: 10px; right: 14px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .verse-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .verse-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--gold-dim), transparent);
+    }
+
+    blockquote {
+      font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+      line-height: 1.85;
+      color: var(--parchment);
+      font-style: italic;
+      border-left: 2px solid var(--gold-dim);
+      padding-left: 20px;
+      margin-bottom: 32px;
+      min-height: 80px;
+    }
+
+    /* ── choices ── */
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 480px) { .choices { grid-template-columns: 1fr; } }
+
+    .choice-btn {
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      border-radius: 3px;
+      color: var(--parchment);
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.1s;
+      text-align: left;
+    }
+    .choice-btn:hover:not(:disabled) {
+      background: rgba(201,168,76,0.08);
+      border-color: var(--gold);
+      color: var(--gold-light);
+      transform: translateY(-1px);
+    }
+    .choice-btn:disabled { cursor: default; }
+    .choice-btn.correct {
+      background: rgba(76,175,80,0.15);
+      border-color: #4caf50;
+      color: #a8e6ab;
+    }
+    .choice-btn.wrong {
+      background: rgba(192,57,43,0.15);
+      border-color: var(--wrong);
+      color: #e08080;
+    }
+
+    /* ── feedback ── */
+    .feedback {
+      min-height: 28px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: opacity 0.3s;
+    }
+    .feedback.correct { color: #7ecf80; }
+    .feedback.wrong   { color: #e08080; }
+
+    /* ── next button ── */
+    .next-btn {
+      display: block;
+      margin: 0 auto;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none;
+      border-radius: 3px;
+      color: var(--ink);
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 13px 36px;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.25);
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .next-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(201,168,76,0.35);
+    }
+    .next-btn:active { transform: translateY(0); }
+    .next-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* ── progress bar ── */
+    .progress-wrap {
+      max-width: 680px;
+      width: 100%;
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(201,168,76,0.12);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--gold-dim), var(--gold-light));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+    .progress-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--gold-dim);
+      white-space: nowrap;
+    }
+
+    /* ── end screen ── */
+    #end-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      animation: fadeUp 0.6s ease both;
+    }
+    #end-screen h2 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1.2rem, 3.5vw, 2rem);
+      color: var(--gold-light);
+      text-shadow: 0 0 20px rgba(201,168,76,0.4);
+    }
+    #end-screen .final-score {
+      font-family: 'Cinzel', serif;
+      font-size: 3.5rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+    #end-screen .final-score span {
+      font-size: 1.4rem;
+      color: var(--gold-dim);
+    }
+    #end-screen p {
+      font-style: italic;
+      color: var(--parchment);
+      font-size: 1.1rem;
+      max-width: 420px;
+    }
+    #restart-btn {
+      margin-top: 8px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none;
+      border-radius: 3px;
+      color: var(--ink);
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 14px 40px;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.25);
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    #restart-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+<div class="top-rule">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+<header>
+  <h1>Scripture Seeker</h1>
+  <p class="subtitle">Book of Mormon Edition</p>
+</header>
+
+<div class="scorebar">
+  <span>SCORE &nbsp;<strong id="score-display">0</strong></span>
+  <span>STREAK &nbsp;<strong id="streak-display">0</strong></span>
+  <span>BEST &nbsp;<strong id="best-display">0</strong></span>
+</div>
+
+<!-- Game card -->
+<div class="card" id="game-card">
+  <div class="verse-label">Scripture Passage</div>
+  <blockquote id="verse-text">Loading…</blockquote>
+  <div class="choices" id="choices"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="next-btn" id="next-btn" disabled>Next Passage →</button>
+</div>
+
+<!-- End screen -->
+<div class="card" id="end-screen">
+  <h2>Thou Hast Finished!</h2>
+  <div class="final-score"><span>Score</span><br/><span id="final-score-num">0</span> <span>/ 10</span></div>
+  <p id="end-message"></p>
+  <button id="restart-btn">Play Again</button>
+</div>
+
+<!-- Progress bar -->
+<div class="progress-wrap">
+  <div class="progress-label" id="q-label">1 / 10</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<script>
+  const QUESTIONS_PER_GAME = 10;
+
+  // ── Scripture bank ──
+  const scriptures = [
+    { text: "And it came to pass that I, Nephi, said unto my father: I will go and do the things which the Lord hath commanded, for I know that the Lord giveth no commandments unto the children of men, save he shall prepare a way for them that they may accomplish the thing which he commandeth them.", answer: "1 Nephi 3", wrong: ["2 Nephi 9", "Mosiah 2", "Alma 7"] },
+    { text: "And now, my sons, I speak unto you these things for your profit and learning; for there is a God, and he hath created all things, both the heavens and the earth, and all things that in them are.", answer: "2 Nephi 2", wrong: ["Jacob 4", "Enos 1", "1 Nephi 17"] },
+    { text: "Men are, that they might have joy.", answer: "2 Nephi 2", wrong: ["Alma 41", "Mosiah 3", "3 Nephi 12"] },
+    { text: "O how great the holiness of our God! For he knoweth all things, and there is not anything save he knows it.", answer: "2 Nephi 9", wrong: ["Helaman 9", "Alma 26", "Moroni 7"] },
+    { text: "And we talk of Christ, we rejoice in Christ, we preach of Christ, we prophesy of Christ, and we write according to our prophecies, that our children may know to what source they may look for a remission of their sins.", answer: "2 Nephi 25", wrong: ["Jacob 2", "Mosiah 5", "3 Nephi 27"] },
+    { text: "For it must needs be, that there is an opposition in all things.", answer: "2 Nephi 2", wrong: ["Alma 42", "Helaman 14", "3 Nephi 11"] },
+    { text: "Now Enos was a man of God most of the time and he walked in the ways of his father.", answer: "Enos 1", wrong: ["Jarom 1", "Mosiah 1", "Omni 1"] },
+    { text: "And now, it came to pass that after Enos had prayed all the day long, and when the night came he did still raise his voice on high that it reached the heavens. And there came a voice unto him, saying: Enos, thy sins are forgiven thee.", answer: "Enos 1", wrong: ["Mosiah 27", "Alma 36", "3 Nephi 9"] },
+    { text: "O, how marvelous are the works of the Lord, and how long doth he suffer with his people; yea, and how blind and impenetrable are the understandings of the children of men.", answer: "Mosiah 4", wrong: ["Alma 12", "Helaman 12", "2 Nephi 28"] },
+    { text: "When ye are in the service of your fellow beings ye are only in the service of your God.", answer: "Mosiah 2", wrong: ["Alma 34", "3 Nephi 13", "Moroni 7"] },
+    { text: "And now, because of the covenant which ye have made ye shall be called the children of Christ, his sons, and his daughters; for behold, this day he hath spiritually begotten you.", answer: "Mosiah 5", wrong: ["Mosiah 27", "Alma 5", "3 Nephi 9"] },
+    { text: "And the Lord said unto him: Blessed art thou, Alma, and blessed are they who were baptized in the waters of Mormon. Thou art blessed because of thy exceeding faith in the words alone of my servant Abinadi.", answer: "Mosiah 26", wrong: ["Mosiah 18", "Mosiah 24", "Alma 8"] },
+    { text: "Now they were desirous that salvation should be declared to every creature, for they could not bear that any human soul should perish; yea, even the very thoughts that any soul should endure endless torment did cause them to quake and tremble.", answer: "Mosiah 28", wrong: ["Alma 26", "Moroni 9", "Helaman 5"] },
+    { text: "Now this was a great trial to those that did stand fast in the faith; nevertheless, they were steadfast and immovable in keeping the commandments of God.", answer: "Alma 1", wrong: ["Alma 15", "Helaman 3", "3 Nephi 6"] },
+    { text: "And now behold, I ask of you, my brethren of the church, have ye spiritually been born of God? Have ye received his image in your countenances?", answer: "Alma 5", wrong: ["Mosiah 5", "Alma 36", "Moroni 8"] },
+    { text: "And Alma went and began to declare the word of God unto the church which was established in the valley of Gideon.", answer: "Alma 6", wrong: ["Alma 4", "Alma 8", "Alma 15"] },
+    { text: "Now faith is not to have a perfect knowledge of things; therefore if ye have faith ye hope for things which are not seen, which are true.", answer: "Alma 32", wrong: ["Ether 12", "Moroni 7", "Hebrews (not BoM—tricky!)"] },
+    { text: "But behold, if ye will awake and arouse your faculties, even to an experiment upon my words, and exercise a particle of faith, yea, even if ye can no more than desire to believe, let this desire work in you, even until ye believe in a manner that ye can give place for a portion of my words.", answer: "Alma 32", wrong: ["Alma 37", "Moroni 10", "2 Nephi 31"] },
+    { text: "O, remember, my son, and learn wisdom in thy youth; yea, learn in thy youth to keep the commandments of God.", answer: "Alma 37", wrong: ["Alma 36", "Alma 39", "Mosiah 1"] },
+    { text: "And now, my son, I have told you this that ye may learn wisdom, that ye may learn of me that there is no other way or means whereby man can be saved, only in and through Christ.", answer: "Alma 38", wrong: ["Alma 34", "2 Nephi 9", "Mosiah 3"] },
+    { text: "Therefore, O my son, whosoever will come may come and partake of the waters of life freely; and whosoever will not come the same is not compelled to come; but in the last day it shall be restored unto him according to his deeds.", answer: "Alma 42", wrong: ["Alma 41", "Alma 40", "Moroni 8"] },
+    { text: "But behold, this is not all—he had given way to idleness, and spent his days in riotous living; for, as Alma had taught him, he had gone about to destroy the church of God.", answer: "Alma 39", wrong: ["Mosiah 27", "Alma 36", "Helaman 6"] },
+    { text: "And now, I will ease your mind somewhat on this subject. Behold, I say unto you, that there is no resurrection—or, I would say, in other words, that this mortal does not put on immortality, this corruption does not put on incorruption—until after the coming of Christ.", answer: "Alma 40", wrong: ["Alma 11", "3 Nephi 28", "Moroni 10"] },
+    { text: "Now, there is a death which is called a temporal death; and the death of Christ shall loose the bands of this temporal death, that all shall be raised from this temporal death.", answer: "Alma 11", wrong: ["Alma 40", "Mosiah 15", "3 Nephi 11"] },
+    { text: "For behold, this is my work and my glory—to bring to pass the immortality and eternal life of man.", answer: "Moses 1", wrong: ["2 Nephi 9", "Alma 42", "D&C 93"] },
+    { text: "And now I would that ye should be humble, and be submissive and gentle; easy to be entreated; full of patience and long-suffering; being temperate in all things.", answer: "Alma 7", wrong: ["Mosiah 3", "Alma 13", "Moroni 7"] },
+    { text: "Yea, and when you do not cry unto the Lord, let your hearts be full, drawn out in prayer unto him continually for your welfare, and also for the welfare of those who are around you.", answer: "Alma 34", wrong: ["3 Nephi 18", "Moroni 6", "Enos 1"] },
+    { text: "For after much tribulation come the blessings.", answer: "Helaman 3", wrong: ["D&C 58", "Mosiah 24", "Alma 26"] },
+    { text: "And thus we can plainly discern, that after a people have been once enlightened by the Spirit of God, and have had great knowledge of things pertaining to righteousness, and then have fallen away into sin and transgression, they become more hardened.", answer: "Helaman 6", wrong: ["Alma 24", "3 Nephi 6", "Ether 9"] },
+    { text: "And now, my sons, remember, remember that it is upon the rock of our Redeemer, who is Christ, the Son of God, that ye must build your foundation.", answer: "Helaman 5", wrong: ["3 Nephi 11", "Moroni 10", "2 Nephi 31"] },
+    { text: "Therefore ye must always pray unto the Father in my name; and whatsoever ye shall ask the Father in my name, which is right, believing that ye shall receive, behold it shall be given unto you.", answer: "3 Nephi 18", wrong: ["3 Nephi 14", "Moroni 10", "Enos 1"] },
+    { text: "And behold, I tell you these things that ye may learn wisdom; that ye may learn that when ye are in the service of your fellow beings ye are only in the service of your God.", answer: "Mosiah 2", wrong: ["Alma 34", "3 Nephi 13", "Moroni 7"] },
+    { text: "And I will also be your light in the wilderness; and I will prepare the way before you, if it so be that ye shall keep my commandments.", answer: "1 Nephi 17", wrong: ["1 Nephi 3", "2 Nephi 5", "Mosiah 7"] },
+    { text: "Wherefore, if ye shall press forward, feasting upon the word of Christ, and endure to the end, behold, thus saith the Father: Ye shall have eternal life.", answer: "2 Nephi 31", wrong: ["3 Nephi 27", "Moroni 10", "2 Nephi 9"] },
+    { text: "For behold, the Spirit of Christ is given to every man, that he may know good from evil; wherefore, I show unto you the way to judge; for every thing which inviteth to do good, and to persuade to believe in Christ, is sent forth by the power and gift of Christ.", answer: "Moroni 7", wrong: ["Moroni 10", "2 Nephi 2", "Alma 12"] },
+    { text: "And when ye shall receive these things, I would exhort you that ye would ask God, the Eternal Father, in the name of Christ, if these things are not true.", answer: "Moroni 10", wrong: ["2 Nephi 32", "3 Nephi 14", "Enos 1"] },
+    { text: "And whatsoever thing is good is just and true; wherefore, nothing that is good denieth the Christ, but acknowledgeth that he is.", answer: "Moroni 10", wrong: ["Moroni 7", "Alma 32", "Helaman 14"] },
+    { text: "Behold, I would exhort you that when ye shall read these things, if it be wisdom in God that ye should read them, that ye would remember how merciful the Lord hath been unto the children of men.", answer: "Moroni 10", wrong: ["Moroni 9", "3 Nephi 26", "2 Nephi 33"] },
+    { text: "And Christ truly said unto our fathers: If ye have faith ye can do all things which are expedient unto me.", answer: "Moroni 10", wrong: ["3 Nephi 17", "Ether 12", "Moroni 7"] },
+    { text: "See that ye are not baptized unworthily; see that ye partake not of the sacrament of Christ unworthily; but see that ye do all things in worthiness, and do it in the name of Jesus Christ.", answer: "Mormon 9", wrong: ["3 Nephi 18", "Moroni 6", "Mosiah 18"] },
+  ];
+
+  // ── State ──
+  let pool = [], currentQ = null, questionIndex = 0, score = 0, streak = 0, bestStreak = 0, answered = false;
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function startGame() {
+    pool = shuffle(scriptures).slice(0, QUESTIONS_PER_GAME);
+    questionIndex = 0;
+    score = 0;
+    streak = 0;
+    bestStreak = 0;
+    document.getElementById('game-card').style.display = '';
+    document.getElementById('end-screen').style.display = 'none';
+    updateScorebar();
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    answered = false;
+    currentQ = pool[questionIndex];
+
+    // verse text
+    document.getElementById('verse-text').textContent = `"${currentQ.text}"`;
+
+    // build 4 choices: answer + 3 wrong, shuffled
+    const options = shuffle([currentQ.answer, ...currentQ.wrong.slice(0, 3)]);
+    const choicesEl = document.getElementById('choices');
+    choicesEl.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = opt;
+      btn.onclick = () => handleAnswer(btn, opt);
+      choicesEl.appendChild(btn);
+    });
+
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('next-btn').disabled = true;
+    updateProgress();
+  }
+
+  function handleAnswer(btn, chosen) {
+    if (answered) return;
+    answered = true;
+
+    const correct = chosen === currentQ.answer;
+
+    if (correct) {
+      score++;
+      streak++;
+      if (streak > bestStreak) bestStreak = streak;
+      btn.classList.add('correct');
+      document.getElementById('feedback').textContent = '✦ Correct! Well done, seeker.';
+      document.getElementById('feedback').className = 'feedback correct';
+    } else {
+      streak = 0;
+      btn.classList.add('wrong');
+      // highlight correct
+      document.querySelectorAll('.choice-btn').forEach(b => {
+        if (b.textContent === currentQ.answer) b.classList.add('correct');
+      });
+      document.getElementById('feedback').textContent = `✦ The answer was ${currentQ.answer}.`;
+      document.getElementById('feedback').className = 'feedback wrong';
+    }
+
+    document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    document.getElementById('next-btn').disabled = false;
+    updateScorebar();
+  }
+
+  function nextQuestion() {
+    questionIndex++;
+    if (questionIndex >= QUESTIONS_PER_GAME) {
+      showEndScreen();
+    } else {
+      // re-animate card
+      const card = document.getElementById('game-card');
+      card.style.animation = 'none';
+      void card.offsetWidth;
+      card.style.animation = '';
+      loadQuestion();
+    }
+  }
+
+  function showEndScreen() {
+    document.getElementById('game-card').style.display = 'none';
+    const es = document.getElementById('end-screen');
+    es.style.display = 'flex';
+    document.getElementById('final-score-num').textContent = score;
+    const msgs = [
+      [0, 3,  "Persevere, and the scriptures shall open unto thee."],
+      [4, 5,  "A good foundation. Continue to study and feast upon the words."],
+      [6, 7,  "Thy diligence is commendable. The Spirit beareth witness."],
+      [8, 9,  "Thou hast great knowledge of the holy record. Press forward!"],
+      [10, 10,"A true scripture seeker! Thy lamp is full of oil."],
+    ];
+    const m = msgs.find(([lo, hi]) => score >= lo && score <= hi);
+    document.getElementById('end-message').textContent = m ? m[2] : '';
+    updateProgress();
+  }
+
+  function updateScorebar() {
+    document.getElementById('score-display').textContent = score;
+    document.getElementById('streak-display').textContent = streak;
+    document.getElementById('best-display').textContent = bestStreak;
+  }
+
+  function updateProgress() {
+    const done = Math.min(questionIndex, QUESTIONS_PER_GAME);
+    const pct = (done / QUESTIONS_PER_GAME) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('q-label').textContent = `${Math.min(done + 1, QUESTIONS_PER_GAME)} / ${QUESTIONS_PER_GAME}`;
+  }
+
+  document.getElementById('next-btn').addEventListener('click', nextQuestion);
+  document.getElementById('restart-btn').addEventListener('click', startGame);
+
+  startGame();
+</script>
+</body>
+</html>
